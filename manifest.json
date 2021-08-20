@@ -1,0 +1,14 @@
+{
+  "name": "Force New Tabs to Main Window",
+  "description": "Designate a single main window where new tabs should open",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": ["tabs", "storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  }
+}
