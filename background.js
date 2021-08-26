@@ -7,8 +7,23 @@ chrome.tabs.onCreated.addListener(async (tab) => {
       // Throws if window ID does not exist
       const window = await chrome.windows.get(mainWindowId);
 
+      // Don't do anything if this is an entirely new window
+      if (tab.index == 0) {
+        return;
+      }
+
       // Do nothing if tab is already in main window
-      if(tab.windowId == mainWindowId) {
+      if (tab.windowId == mainWindowId) {
+        return;
+      }
+
+      // Ignore incognito tabs
+      if(tab.incognito) {
+        return;
+      }
+
+      // Ignore if a new tab was explicitly requested in a given window
+      if (tab.pendingUrl == 'chrome://newtab/') {
         return;
       }
 
