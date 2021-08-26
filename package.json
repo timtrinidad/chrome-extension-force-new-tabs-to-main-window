@@ -1,0 +1,20 @@
+{
+  "name": "chrome-extension-main-window",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/timtrinidad/chrome-extension-force-new-tabs-to-main-window",
+  "author": "Tim Trinidad <timtrinidad@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint *.js",
+    "lint:fix": "eslint *.js --fix"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.24.2",
+    "eslint-plugin-prettier": "^3.4.1",
+    "prettier": "^2.3.2"
+  }
+}

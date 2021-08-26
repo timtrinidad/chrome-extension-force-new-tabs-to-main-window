@@ -1,4 +1,7 @@
 # Chrome Extension: Force New Tabs to Main Window
+
+[![CircleCI](https://circleci.com/gh/timtrinidad/chrome-extension-force-new-tabs-to-main-window.svg?style=svg)](https://circleci.com/gh/timtrinidad/chrome-extension-force-new-tabs-to-main-window)
+
 This is a simple chrome extension that allows you to designate
 a single main window to which new tabs are opened.
 
