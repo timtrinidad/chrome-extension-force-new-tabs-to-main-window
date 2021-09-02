@@ -15,4 +15,5 @@ but still want your main browsing window to handle any new tabs opened from an e
 
 ## Publishing to Chrome Store
 * TODO: automate
-* Follow [https://developer.chrome.com/docs/webstore/publish/](https://developer.chrome.com/docs/webstore/publish/)
+* Run `yarn package`
+* Upload to [Chrome Web Store](https://chrome.google.com/webstore/devconsole/a1eb0e00-3f17-40ec-9c52-fd5f24338591/kgojjafnbajjomijiceiefakpphcicen/edit/package)
