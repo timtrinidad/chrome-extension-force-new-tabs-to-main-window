@@ -3,11 +3,19 @@ chrome.tabs.onCreated.addListener(async (tab) => {
   chrome.storage.sync.get(
     {
       mainWindowId: 0,
+      pinnedOnly: false,
     },
-    async ({ mainWindowId }) => {
+    async ({ mainWindowId, pinnedOnly }) => {
       try {
         // Throws if window ID does not exist
         await chrome.windows.get(mainWindowId);
+
+        if (pinnedOnly && tab.openerTabId) {
+          const openerTab = await chrome.tabs.get(tab.openerTabId);
+          if (!openerTab.pinned) {
+            return;
+          }
+        }
 
         // Don't do anything if this is an entirely new window
         if (tab.index === 0) {

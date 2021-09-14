@@ -15,5 +15,16 @@ but still want your main browsing window to handle any new tabs opened from an e
 
 ## Publishing to Chrome Store
 * TODO: automate
+* Update manifest.json for new version
+* Update [CHANGELOG.md](changelog.md)
+* Tag release
+
+      git tag [version]
+
 * Run `yarn package`
+* Push to github
+
+      git push
+      git push --tags
+
 * Upload to [Chrome Web Store](https://chrome.google.com/webstore/devconsole/a1eb0e00-3f17-40ec-9c52-fd5f24338591/kgojjafnbajjomijiceiefakpphcicen/edit/package)

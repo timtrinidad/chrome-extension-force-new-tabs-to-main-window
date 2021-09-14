@@ -1,9 +1,11 @@
 // Saves options to chrome.storage
 async function saveOptions() {
   const mainWindowId = document.getElementById('main-window').value;
+  const pinnedOnly = document.getElementById('pinned-only').value;
   chrome.storage.sync.set(
     {
       mainWindowId: Number(mainWindowId),
+      pinnedOnly,
     },
     () => {
       // Update status to let user know options were saved.
@@ -11,7 +13,7 @@ async function saveOptions() {
       status.textContent = 'Options saved.';
       setTimeout(() => {
         status.textContent = '';
-      }, 750);
+      }, 2000);
     }
   );
 }
@@ -40,9 +42,11 @@ async function restoreOptions() {
   chrome.storage.sync.get(
     {
       mainWindowId: '0',
+      pinnedOnly: false,
     },
-    ({ mainWindowId }) => {
+    ({ mainWindowId, pinnedOnly }) => {
       document.getElementById('main-window').value = mainWindowId;
+      document.getElementById('pinned-only').checked = pinnedOnly;
     }
   );
 }

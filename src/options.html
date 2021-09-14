@@ -1,15 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head><title>Extension Options</title></head>
+<style type="text/css">
+    body {
+        padding: 10px;
+    }
+    .option {
+        margin-bottom: 15px;
+    }
+    label {
+        font-weight: bold;
+    }
+    select, .instructions {
+        display: block;
+        margin-top: 5px;
+    }
+
+</style>
 <body>
 
-Main Window:
-<select id="main-window">
-    <option value="0">Choose a window...</option>
-</select>
+<div class="option">
+    <label for="main-window">Main Window</label>
+    <select id="main-window" name="main-window">
+        <option value="0">Choose a window...</option>
+    </select>
+</div>
 
-<div id="status"></div>
-<button id="save">Save</button>
+<div class="option">
+    <label for="pinned-only">Force Only Clicks from Pinned Tabs:</label>
+    <input type="checkbox" id="pinned-only" name="pinned-only" />
+    <div class="instructions">If this option is enabled, the extensions will only move tabs opened from pinned tabs</div>
+</div>
+
+
+<button id="save">Save</button> <span id="status"></span>
 
 <script src="options.js"></script>
 </body>
