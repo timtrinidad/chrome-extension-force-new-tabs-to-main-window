@@ -10,6 +10,13 @@ chrome.tabs.onCreated.addListener(async (tab) => {
         // Throws if window ID does not exist
         await chrome.windows.get(mainWindowId);
 
+        // If no source tab, but url is populated, this is likely
+        // the user restoring an existing tab. Don't move it.
+        if (!tab.openerTabId && tab.url) {
+          return;
+        }
+
+        // If option enabled, only move new tabs created from pinned tabs
         if (pinnedOnly && tab.openerTabId) {
           const openerTab = await chrome.tabs.get(tab.openerTabId);
           if (!openerTab.pinned) {
