@@ -1,9 +1,69 @@
-version: 2
+version: 2.1
+
+orbs:
+  node: circleci/node@4.7.0
+
+
 jobs:
-  build:
+  test:
     docker:
       - image: circleci/node:16
     steps:
       - checkout
-      - run: yarn
+      - node/install-packages:
+          pkg-manager: yarn-berry
+          cache-path: /usr/local/share/.cache/yarn
+          cache-version: v1
       - run: yarn lint
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+  build:
+    docker:
+      - image: circleci/node:16
+    steps:
+      - attach_workspace:
+          at: .
+      - run: yarn package
+      - persist_to_workspace:
+          root: .
+          paths:
+            - extension.zip
+  release:
+    docker:
+      - image: alpine:3.14
+    environment:
+      - APP_ID: kgojjafnbajjomijiceiefakpphcicen
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: "Install Dependencies"
+          command: |
+            apk add jq curl
+      - run:
+          name: "Upload & Publish Extension to the Google Chrome Store"
+          command: |
+            ACCESS_TOKEN=$(curl "https://accounts.google.com/o/oauth2/token" -d "client_id=${GOOGLE_CIRCLECI_CLIENT_ID}&client_secret=${GOOGLE_CIRCLECI_CLIENT_SECRET}&refresh_token=${GOOGLE_CIRCLECI_REFRESH_TOKEN}&grant_type=refresh_token&redirect_uri=urn:ietf:wg:oauth:2.0:oob" | jq -r .access_token)
+            curl --fail-with-body -H "Authorization: Bearer ${ACCESS_TOKEN}" -H "x-goog-api-version: 2" -X PUT -T extension.zip -v "https://www.googleapis.com/upload/chromewebstore/v1.1/items/${APP_ID}"
+            curl --fail-with-body -H "Authorization: Bearer ${ACCESS_TOKEN}" -H "x-goog-api-version: 2" -H "Content-Length: 0" -X POST -v "https://www.googleapis.com/chromewebstore/v1.1/items/${APP_ID}/publish"
+
+workflows:
+  version: 2
+  chrome-extension:
+    jobs:
+      - test
+      - hold:
+          type: approval
+          requires:
+            - test
+      - build:
+          requires:
+            - hold
+      - release:
+          context: All Projects
+          requires:
+            - build
+
+
