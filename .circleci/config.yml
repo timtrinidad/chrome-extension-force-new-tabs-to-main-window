@@ -32,6 +32,7 @@ jobs:
             - extension.zip
   release:
     docker:
+      # Use alpine so we can get curl version >7.76.0 with --fail-with-body flag
       - image: alpine:3.14
     environment:
       - APP_ID: kgojjafnbajjomijiceiefakpphcicen

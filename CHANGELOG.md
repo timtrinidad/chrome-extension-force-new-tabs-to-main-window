@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [1.0.2] - 2021-09-15
+## [1.0.3] - 2021-09-15
 ### Added
 - Automate publishing to Chrome Web Store via CircleCI
 - Keep original window if restoring closed tab
