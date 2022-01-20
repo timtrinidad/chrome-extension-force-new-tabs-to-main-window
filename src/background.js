@@ -1,7 +1,18 @@
 chrome.action.onClicked.addListener((tab) => {
-  chrome.storage.sync.set({
-    mainWindowId: tab.windowId,
-  });
+  chrome.storage.sync.get(
+    {
+      mainWindowId: 0,
+      pinnedOnly: false,
+    },
+    ({ mainWindowId }) => {
+      chrome.storage.sync.set({
+        mainWindowId:
+          mainWindowId === 0 || mainWindowId !== tab.windowId
+            ? tab.windowId
+            : 0, // toggle it if they click the same window again
+      });
+    }
+  );
 });
 
 chrome.tabs.onCreated.addListener(async (tab) => {
