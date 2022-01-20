@@ -1,3 +1,9 @@
+chrome.action.onClicked.addListener((tab) => {
+  chrome.storage.sync.set({
+    mainWindowId: tab.windowId,
+  });
+});
+
 chrome.tabs.onCreated.addListener(async (tab) => {
   // Get value from storage, no promise support
   chrome.storage.sync.get(
