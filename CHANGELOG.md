@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.4] - 2022-01-19
+### Fixed
+- Saving pinned-only setting
+
 ## [1.0.3] - 2021-09-15
 ### Added
 - Automate publishing to Chrome Web Store via CircleCI
