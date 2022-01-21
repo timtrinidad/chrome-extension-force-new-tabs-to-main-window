@@ -2,7 +2,6 @@
 async function saveOptions() {
   const mainWindowId = document.getElementById('main-window').value;
   const pinnedOnly = document.getElementById('pinned-only').checked;
-
   chrome.storage.sync.set(
     {
       mainWindowId: Number(mainWindowId),
