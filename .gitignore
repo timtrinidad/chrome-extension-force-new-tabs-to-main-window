@@ -2,3 +2,4 @@
 .DS_STORE
 *.zip
 node_modules
+pnpm-lock.yaml
