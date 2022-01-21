@@ -1,3 +1,28 @@
+function updateIcon(active) {
+  if (active) {
+    chrome.action.setIcon({
+      path: 'src/icon_filled.png', // set it only for MainWindow
+    });
+    // windowId: mainWindowId,
+  } else {
+    chrome.action.setIcon({
+      path: 'src/icon.png', // set it for all
+    });
+  }
+}
+
+chrome.runtime.onInstalled.addListener(async () => {
+  chrome.storage.sync.get(
+    // run this to update the icon when the extension is installed
+    {
+      mainWindowId: 0,
+    },
+    ({ mainWindowId }) => {
+      updateIcon(mainWindowId !== 0);
+    }
+  );
+});
+
 chrome.action.onClicked.addListener((tab) => {
   chrome.storage.sync.get(
     {
@@ -5,6 +30,8 @@ chrome.action.onClicked.addListener((tab) => {
       pinnedOnly: false,
     },
     ({ mainWindowId }) => {
+      updateIcon(mainWindowId);
+
       chrome.storage.sync.set({
         mainWindowId:
           mainWindowId === 0 || mainWindowId !== tab.windowId
