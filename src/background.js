@@ -5,7 +5,7 @@ function updateIcons(mainWindowId, mainWindowIdOld = null) {
     tabs.forEach((tab) => {
       // for all the mainWindow tabs
       chrome.action.setIcon({
-        path: 'src/icon_filled.png', // set the icon for only for MainWindow
+        path: 'src/icon_x.png', // set the icon for only for MainWindow
         tabId: tab.id,
       });
     });
@@ -83,7 +83,7 @@ chrome.tabs.onAttached.addListener(async (tabId, { newWindowId }) => {
     ({ mainWindowId }) => {
       if (newWindowId === mainWindowId) {
         chrome.action.setIcon({
-          path: 'src/icon_filled.png', // set the icon for only for MainWindow
+          path: 'src/icon_x.png', // set the icon for only for MainWindow
           tabId,
         });
       }
@@ -101,7 +101,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       ({ mainWindowId }) => {
         if (tab.windowId === mainWindowId) {
           chrome.action.setIcon({
-            path: 'src/icon_filled.png', // set the icon for only for MainWindow
+            path: 'src/icon_x.png', // set the icon for only for MainWindow
             tabId,
           });
         } else {
