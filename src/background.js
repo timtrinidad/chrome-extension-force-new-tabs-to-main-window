@@ -1,3 +1,66 @@
+chrome.tabs.query(
+  {
+    active: true,
+  },
+  (tabs) => {
+    const newTabFocusIndex = {};
+    tabs.forEach((tab) => {
+      newTabFocusIndex[tab.windowId] = tab.id;
+    });
+
+    chrome.storage.sync.set(
+      {
+        tabFocusIndex: newTabFocusIndex,
+      },
+      () => {
+        console.log('saved', newTabFocusIndex);
+      }
+    );
+  }
+);
+
+chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
+  chrome.storage.sync.get(
+    {
+      tabFocusIndex: {},
+    },
+    ({ tabFocusIndex }) => {
+      const newTabFocusIndex = tabFocusIndex;
+      newTabFocusIndex[windowId] = tabId;
+
+      chrome.storage.sync.set(
+        {
+          tabFocusIndex: newTabFocusIndex,
+        },
+        () => {
+          console.log('saved', newTabFocusIndex);
+        }
+      );
+    }
+  );
+});
+
+chrome.windows.onRemoved.addListener((windowId) => {
+  chrome.storage.sync.get(
+    {
+      tabFocusIndex: {},
+    },
+    ({ tabFocusIndex }) => {
+      const newTabFocusIndex = tabFocusIndex;
+      delete newTabFocusIndex[windowId];
+
+      chrome.storage.sync.set(
+        {
+          tabFocusIndex: newTabFocusIndex,
+        },
+        () => {
+          console.log('saved', newTabFocusIndex);
+        }
+      );
+    }
+  );
+});
+
 chrome.tabs.onCreated.addListener(async (tab) => {
   // Get value from storage, no promise support
   chrome.storage.sync.get(
