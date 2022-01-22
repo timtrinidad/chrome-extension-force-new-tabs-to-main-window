@@ -48,6 +48,7 @@ chrome.tabs.onCreated.addListener(async (tab) => {
         await chrome.tabs.move(tab.id, { windowId: mainWindowId, index: -1 });
         await chrome.tabs.update(tab.id, { active: true });
         await chrome.windows.update(mainWindowId, { focused: true });
+        console.log('to-do make it restore the focus here');
       } catch (e) {
         // do nothing
       }
