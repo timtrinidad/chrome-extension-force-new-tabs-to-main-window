@@ -25,18 +25,16 @@ function updateIcons(mainWindowId, mainWindowIdOld = null) {
   }
 }
 
-// check the icons if the extension is installed
-chrome.runtime.onInstalled.addListener(async () => {
-  chrome.storage.sync.get(
-    // run this to update the icon when the extension is installed
-    {
-      mainWindowId: 0,
-    },
-    ({ mainWindowId }) => {
-      updateIcons(mainWindowId);
-    }
-  );
-});
+// upon startup, update the icons
+chrome.storage.sync.get(
+  // run this to update the icon when the extension is installed
+  {
+    mainWindowId: 0,
+  },
+  ({ mainWindowId }) => {
+    updateIcons(mainWindowId);
+  }
+);
 
 // main icon was clicked, so toggle the mainWindow
 chrome.action.onClicked.addListener((tab) => {
