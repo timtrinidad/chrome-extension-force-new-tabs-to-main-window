@@ -43,7 +43,6 @@ chrome.action.onClicked.addListener((tab) => {
   chrome.storage.sync.get(
     {
       mainWindowId: 0,
-      pinnedOnly: false,
     },
     ({ mainWindowId }) => {
       const newWindowId =
@@ -93,23 +92,17 @@ chrome.tabs.onAttached.addListener(async (tabId, { newWindowId }) => {
 
 // this is necessary because we must wait for the tab to load before setting the icon
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete') {
+  if (tab.active && changeInfo.status === 'complete') {
     chrome.storage.sync.get(
       {
         mainWindowId: 0,
       },
       ({ mainWindowId }) => {
-        if (tab.windowId === mainWindowId) {
-          chrome.action.setIcon({
-            path: 'src/icon_x.png', // set the icon for only for MainWindow
-            tabId,
-          });
-        } else {
-          chrome.action.setIcon({
-            path: 'src/icon.png', // set the icon for only for MainWindow
-            tabId,
-          });
-        }
+        chrome.action.setIcon({
+          path:
+            tab.windowId === mainWindowId ? 'src/icon_x.png' : 'src/icon.png', // set the icon for only for MainWindow
+          tabId,
+        });
       }
     );
   }
