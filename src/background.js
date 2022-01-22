@@ -1,64 +1,62 @@
+// on startup, create a table of every window's active tab
 chrome.tabs.query(
   {
     active: true,
   },
   (tabs) => {
-    const newTabFocusIndex = {};
+    const newTabFocusTable = {}; // start fresh
     tabs.forEach((tab) => {
-      newTabFocusIndex[tab.windowId] = tab.id;
+      newTabFocusTable[tab.windowId] = tab.id;
     });
 
-    chrome.storage.sync.set(
-      {
-        tabFocusIndex: newTabFocusIndex,
-      },
-      () => {
-        console.log('saved', newTabFocusIndex);
-      }
-    );
+    chrome.storage.sync.set({
+      tabFocusTable: newTabFocusTable,
+    });
   }
 );
 
+// on activated, add it to the index
 chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
   chrome.storage.sync.get(
     {
-      tabFocusIndex: {},
+      tabFocusTable: {},
     },
-    ({ tabFocusIndex }) => {
-      const newTabFocusIndex = tabFocusIndex;
-      newTabFocusIndex[windowId] = tabId;
+    ({ tabFocusTable }) => {
+      const newTabFocusTable = tabFocusTable;
+      newTabFocusTable[windowId] = tabId;
 
-      chrome.storage.sync.set(
-        {
-          tabFocusIndex: newTabFocusIndex,
-        },
-        () => {
-          console.log('saved', newTabFocusIndex);
-        }
-      );
+      chrome.storage.sync.set({
+        tabFocusTable: newTabFocusTable,
+      });
     }
   );
 });
 
-chrome.windows.onRemoved.addListener((windowId) => {
+// loads our index, removes the window from it, and saves
+function removeWindow(windowId) {
   chrome.storage.sync.get(
     {
-      tabFocusIndex: {},
+      tabFocusTable: {},
     },
-    ({ tabFocusIndex }) => {
-      const newTabFocusIndex = tabFocusIndex;
-      delete newTabFocusIndex[windowId];
+    ({ tabFocusTable }) => {
+      const newTabFocusTable = tabFocusTable;
+      delete newTabFocusTable[windowId];
 
-      chrome.storage.sync.set(
-        {
-          tabFocusIndex: newTabFocusIndex,
-        },
-        () => {
-          console.log('saved', newTabFocusIndex);
-        }
-      );
+      chrome.storage.sync.set({
+        tabFocusTable: newTabFocusTable,
+      });
     }
   );
+}
+
+// on tab closed, remove it, if it's there
+chrome.tabs.onRemoved.addListener((tabId, { windowId }) => {
+  removeWindow(windowId);
+});
+
+// on window closed, remove it from the index
+chrome.windows.onRemoved.addListener((windowId) => {
+  removeWindow(windowId);
 });
 
 chrome.tabs.onCreated.addListener(async (tab) => {
@@ -67,8 +65,9 @@ chrome.tabs.onCreated.addListener(async (tab) => {
     {
       mainWindowId: 0,
       pinnedOnly: false,
+      tabFocusTable: {},
     },
-    async ({ mainWindowId, pinnedOnly }) => {
+    async ({ mainWindowId, pinnedOnly, tabFocusTable }) => {
       try {
         // Throws if window ID does not exist
         await chrome.windows.get(mainWindowId);
@@ -107,11 +106,16 @@ chrome.tabs.onCreated.addListener(async (tab) => {
           return;
         }
 
-        // Move tab and focus
+        // restore focus for source window
+        const previousTabId = tabFocusTable[tab.windowId];
+        if (previousTabId !== undefined) {
+          await chrome.tabs.update(previousTabId, { active: true });
+        }
+
+        // Move tab
         await chrome.tabs.move(tab.id, { windowId: mainWindowId, index: -1 });
         await chrome.tabs.update(tab.id, { active: true });
         await chrome.windows.update(mainWindowId, { focused: true });
-        console.log('to-do make it restore the focus here');
       } catch (e) {
         // do nothing
       }
