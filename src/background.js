@@ -1,16 +1,31 @@
-function updateIcon(active) {
-  if (active) {
-    chrome.action.setIcon({
-      path: 'src/icon_filled.png', // set it only for MainWindow
+// TODO we should actually only update only the previous mainWindowId and the newWindowId
+function updateIcons(mainWindowId, mainWindowIdOld = null) {
+  // highlight the mainWindow
+  chrome.tabs.query({ windowId: mainWindowId }, (tabs) => {
+    tabs.forEach((tab) => {
+      // for all the mainWindow tabs
+      chrome.action.setIcon({
+        path: 'src/icon_filled.png', // set the icon for only for MainWindow
+        tabId: tab.id,
+      });
     });
-    // windowId: mainWindowId,
-  } else {
-    chrome.action.setIcon({
-      path: 'src/icon.png', // set it for all
+  });
+
+  // un-highlight the previous window
+  if (mainWindowIdOld !== null) {
+    chrome.tabs.query({ windowId: mainWindowIdOld }, (tabs) => {
+      tabs.forEach((tab) => {
+        // for all the mainWindow tabs
+        chrome.action.setIcon({
+          path: 'src/icon.png', // set the icon for only for MainWindow
+          tabId: tab.id,
+        });
+      });
     });
   }
 }
 
+// check the icons if the extension is installed
 chrome.runtime.onInstalled.addListener(async () => {
   chrome.storage.sync.get(
     // run this to update the icon when the extension is installed
@@ -18,11 +33,12 @@ chrome.runtime.onInstalled.addListener(async () => {
       mainWindowId: 0,
     },
     ({ mainWindowId }) => {
-      updateIcon(mainWindowId !== 0);
+      updateIcons(mainWindowId);
     }
   );
 });
 
+// main icon was clicked, so toggle the mainWindow
 chrome.action.onClicked.addListener((tab) => {
   chrome.storage.sync.get(
     {
@@ -30,16 +46,73 @@ chrome.action.onClicked.addListener((tab) => {
       pinnedOnly: false,
     },
     ({ mainWindowId }) => {
-      updateIcon(mainWindowId);
+      const newWindowId =
+        mainWindowId === 0 || mainWindowId !== tab.windowId ? tab.windowId : 0;
+      updateIcons(newWindowId, mainWindowId);
 
       chrome.storage.sync.set({
-        mainWindowId:
-          mainWindowId === 0 || mainWindowId !== tab.windowId
-            ? tab.windowId
-            : 0, // toggle it if they click the same window again
+        mainWindowId: newWindowId, // toggle it if they click the same window again
       });
     }
   );
+});
+
+// it's detached, therefore this is a new window, therefore, we know it's not the mainWindow
+chrome.tabs.onDetached.addListener(async (tabId, { oldWindowId }) => {
+  chrome.storage.sync.get(
+    {
+      mainWindowId: 0,
+    },
+    ({ mainWindowId }) => {
+      if (oldWindowId === mainWindowId) {
+        chrome.action.setIcon({
+          path: 'src/icon.png', // set it as NOT the mainWindow
+          tabId,
+        });
+      }
+    }
+  );
+});
+
+// it's attached, therefore check is it needs the mainWindowIcon
+chrome.tabs.onAttached.addListener(async (tabId, { newWindowId }) => {
+  chrome.storage.sync.get(
+    {
+      mainWindowId: 0,
+    },
+    ({ mainWindowId }) => {
+      if (newWindowId === mainWindowId) {
+        chrome.action.setIcon({
+          path: 'src/icon_filled.png', // set the icon for only for MainWindow
+          tabId,
+        });
+      }
+    }
+  );
+});
+
+// this is necessary because we must wait for the tab to load before setting the icon
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete') {
+    chrome.storage.sync.get(
+      {
+        mainWindowId: 0,
+      },
+      ({ mainWindowId }) => {
+        if (tab.windowId === mainWindowId) {
+          chrome.action.setIcon({
+            path: 'src/icon_filled.png', // set the icon for only for MainWindow
+            tabId,
+          });
+        } else {
+          chrome.action.setIcon({
+            path: 'src/icon.png', // set the icon for only for MainWindow
+            tabId,
+          });
+        }
+      }
+    );
+  }
 });
 
 chrome.tabs.onCreated.addListener(async (tab) => {
@@ -92,6 +165,7 @@ chrome.tabs.onCreated.addListener(async (tab) => {
         await chrome.tabs.move(tab.id, { windowId: mainWindowId, index: -1 });
         await chrome.tabs.update(tab.id, { active: true });
         await chrome.windows.update(mainWindowId, { focused: true });
+        // note: we WANT TO update the icon here, but CANNOT, because we must wait for the tab to load, which is handled by *onUpdated*
       } catch (e) {
         // do nothing
       }
