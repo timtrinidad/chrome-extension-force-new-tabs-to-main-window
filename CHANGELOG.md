@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.1.1] - 2022-01-19
+### Fixed
+- Moving tab to MainWindow now restores previous focus on source window
+
 ## [1.0.4] - 2022-01-19
 ### Fixed
 - Saving pinned-only setting
