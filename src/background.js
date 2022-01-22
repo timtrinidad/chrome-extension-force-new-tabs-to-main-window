@@ -106,16 +106,17 @@ chrome.tabs.onCreated.addListener(async (tab) => {
           return;
         }
 
-        // restore focus for source window
         const previousTabId = tabFocusTable[tab.windowId];
-        if (previousTabId !== undefined) {
-          await chrome.tabs.update(previousTabId, { active: true });
-        }
 
         // Move tab
         await chrome.tabs.move(tab.id, { windowId: mainWindowId, index: -1 });
         await chrome.tabs.update(tab.id, { active: true });
         await chrome.windows.update(mainWindowId, { focused: true });
+
+        // restore active tab for the source window
+        if (previousTabId !== undefined) {
+          await chrome.tabs.update(previousTabId, { active: true });
+        }
       } catch (e) {
         // do nothing
       }
