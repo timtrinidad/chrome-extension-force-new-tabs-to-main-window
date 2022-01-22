@@ -1,4 +1,4 @@
-// TODO we should actually only update only the previous mainWindowId and the newWindowId
+// only update only the mainWindowIdOld and the mainWindowId
 function updateIcons(mainWindowId, mainWindowIdOld = null) {
   // highlight the mainWindow
   chrome.tabs.query({ windowId: mainWindowId }, (tabs) => {
