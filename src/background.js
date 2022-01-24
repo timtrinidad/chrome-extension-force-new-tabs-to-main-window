@@ -1,73 +1,63 @@
 // on startup, create a table of every window's active tab
+const tabFocusTable = {}; // start fresh
 chrome.tabs.query(
   {
     active: true,
   },
   (tabs) => {
-    const newTabFocusTable = {}; // start fresh
     tabs.forEach((tab) => {
-      newTabFocusTable[tab.windowId] = tab.id;
-    });
-
-    chrome.storage.sync.set({
-      tabFocusTable: newTabFocusTable,
+      tabFocusTable[tab.windowId] = tab.id;
     });
   }
 );
 
-// on activated, add it to the index
+// on activated, add it to the table
 chrome.tabs.onActivated.addListener(({ tabId, windowId }) => {
-  chrome.storage.sync.get(
-    {
-      tabFocusTable: {},
-    },
-    ({ tabFocusTable }) => {
-      const newTabFocusTable = tabFocusTable;
-      newTabFocusTable[windowId] = tabId;
-
-      chrome.storage.sync.set({
-        tabFocusTable: newTabFocusTable,
-      });
-    }
-  );
+  tabFocusTable[windowId] = tabId;
 });
 
-// loads our index, removes the window from it, and saves
-function removeWindow(windowId) {
-  chrome.storage.sync.get(
+/** tab removed from window, so update the window's active tab */
+function updateWindowActiveTab(windowId) {
+  // get the new active tab from the window
+  chrome.tabs.query(
     {
-      tabFocusTable: {},
+      active: true,
+      windowId,
     },
-    ({ tabFocusTable }) => {
-      const newTabFocusTable = tabFocusTable;
-      delete newTabFocusTable[windowId];
-
-      chrome.storage.sync.set({
-        tabFocusTable: newTabFocusTable,
-      });
+    ([tab]) => {
+      if (tab) {
+        if (tab.id !== tabFocusTable[windowId]) {
+          tabFocusTable[windowId] = tab.id; // update the window with newly active tab (since old tab was removed)
+        }
+      }
     }
   );
 }
 
-// on tab closed, remove it, if it's there
+// on tab closed, update which tab is active on it's window
 chrome.tabs.onRemoved.addListener((tabId, { windowId }) => {
-  removeWindow(windowId);
+  updateWindowActiveTab(windowId);
 });
 
-// on window closed, remove it from the index
+// on tab detached, update which tab is active on it's window
+chrome.tabs.onDetached.addListener((tabId, { oldWindowId }) => {
+  updateWindowActiveTab(oldWindowId);
+});
+
+// on window closed, remove it from the table
 chrome.windows.onRemoved.addListener((windowId) => {
-  removeWindow(windowId);
+  delete tabFocusTable[windowId];
 });
 
 chrome.tabs.onCreated.addListener(async (tab) => {
+  const previousTabId = tabFocusTable[tab.windowId]; // note: we get this before hitting storage to avoid a race condition between onActivated overwriting this
   // Get value from storage, no promise support
   chrome.storage.sync.get(
     {
       mainWindowId: 0,
       pinnedOnly: false,
-      tabFocusTable: {},
     },
-    async ({ mainWindowId, pinnedOnly, tabFocusTable }) => {
+    async ({ mainWindowId, pinnedOnly }) => {
       try {
         // Throws if window ID does not exist
         await chrome.windows.get(mainWindowId);
@@ -106,17 +96,15 @@ chrome.tabs.onCreated.addListener(async (tab) => {
           return;
         }
 
-        const previousTabId = tabFocusTable[tab.windowId];
-
-        // Move tab
-        await chrome.tabs.move(tab.id, { windowId: mainWindowId, index: -1 });
-        await chrome.tabs.update(tab.id, { active: true });
-        await chrome.windows.update(mainWindowId, { focused: true });
-
-        // restore active tab for the source window
+        // restore previous windows's focus
         if (previousTabId !== undefined) {
           await chrome.tabs.update(previousTabId, { active: true });
         }
+
+        // Move tab
+        await chrome.tabs.move(tab.id, { windowId: mainWindowId, index: -1 }); // move it to the mainWindow
+        await chrome.tabs.update(tab.id, { active: true }); // make the window flip to that tab
+        await chrome.windows.update(mainWindowId, { focused: true }); // focus that tab
       } catch (e) {
         // do nothing
       }
