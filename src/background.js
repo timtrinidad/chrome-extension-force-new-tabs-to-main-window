@@ -56,8 +56,9 @@ chrome.tabs.onCreated.addListener(async (tab) => {
     {
       mainWindowId: 0,
       pinnedOnly: false,
+      externalOnly: false,
     },
-    async ({ mainWindowId, pinnedOnly }) => {
+    async ({ mainWindowId, pinnedOnly, externalOnly }) => {
       try {
         // Throws if window ID does not exist
         await chrome.windows.get(mainWindowId);
@@ -74,6 +75,11 @@ chrome.tabs.onCreated.addListener(async (tab) => {
           if (!openerTab.pinned) {
             return;
           }
+        }
+
+        // Ignore if a new tab was opened from another program
+        if (externalOnly && tab.openerTabId !== undefined) {
+          return;
         }
 
         // Don't do anything if this is an entirely new window

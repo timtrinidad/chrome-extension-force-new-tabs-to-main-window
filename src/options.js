@@ -2,11 +2,13 @@
 async function saveOptions() {
   const mainWindowId = document.getElementById('main-window').value;
   const pinnedOnly = document.getElementById('pinned-only').checked;
+  const externalOnly = document.getElementById('external-only').checked;
 
   chrome.storage.sync.set(
     {
       mainWindowId: Number(mainWindowId),
       pinnedOnly,
+      externalOnly,
     },
     () => {
       // Update status to let user know options were saved.
@@ -44,10 +46,12 @@ async function restoreOptions() {
     {
       mainWindowId: '0',
       pinnedOnly: false,
+      externalOnly: false,
     },
-    ({ mainWindowId, pinnedOnly }) => {
+    ({ mainWindowId, pinnedOnly, externalOnly }) => {
       document.getElementById('main-window').value = mainWindowId;
       document.getElementById('pinned-only').checked = pinnedOnly;
+      document.getElementById('external-only').checked = externalOnly;
     }
   );
 }
