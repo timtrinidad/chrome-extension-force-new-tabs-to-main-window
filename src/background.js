@@ -90,7 +90,7 @@ chrome.tabs.onAttached.addListener(async (tabId, { newWindowId }) => {
 
 // this is necessary because we must wait for the tab to load before setting the icon
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (tab.active && changeInfo.status === 'complete') {
+  if (changeInfo.status === 'complete') {
     chrome.storage.sync.get(
       {
         mainWindowId: 0,
