@@ -17,16 +17,25 @@ but still want your main browsing window to handle any new tabs opened from an e
 3. Choose a window in which all new tabs should be opened.
 
 ## Publishing to Chrome Store
-* Update manifest.json for new version
-* Update [CHANGELOG.md](CHANGELOG.md)
-* Tag release
+1. Update manifest.json for new version
+2. Update [CHANGELOG.md](CHANGELOG.md)
+3. Tag release
 
       git tag [version]
 
-* Run `yarn package`
-* Push to github
+4. Run `yarn package`
+5. Push to github
 
       git push
       git push --tags
 
-* Run CircleCI approval to upload and publish to Chrome Web Store
+6. Run CircleCI approval to upload and publish to Chrome Web Store
+
+If there is an error at the publish step, the refresh token may need to be renewed (especially if it has been >6mo since its last use).
+1. In the browser, go to https://accounts.google.com/o/oauth2/auth?response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fchromewebstore&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob&access_type=offline&approval_prompt=force&client_id=YOUR_CLIENT_ID_HERE
+2. Copy the `code`
+3. Run the following:
+
+     curl "https://accounts.google.com/o/oauth2/token" -d "client_id=YOUR_CLIENT_ID_HERE&client_secret=YOUR_CLIENT_SECRET_HERE&code=THE_CODE_FROM_STEP_2_HERE&grant_type=authorization_code&redirect_uri=urn:ietf:wg:oauth:2.0:oob"
+
+4. Copy the returned refresh token into CircleCI's environment variables for `GOOGLE_CIRCLECI_REFRESH_TOKEN`
