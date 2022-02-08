@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.1.0] - 2022-02-08
+### Added
+- Ability to click on extension icon to toggle "main window"
+### Fixed
+- Saved "Pinned-only" setting does not load properly on extension options window
+
 ## [1.0.4] - 2022-01-19
 ### Fixed
 - Saving pinned-only setting
